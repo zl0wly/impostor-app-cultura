@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.0.1
+
+### Corregido
+- Los permisos de Bluetooth/Ubicación solo se piden en el modo **Nearby**; el modo
+  **Hotspot** ya no los exige (clave para teléfonos sin Nearby).
+- La sala se limita a **8 jugadores**: se rechazan las conexiones extra (Nearby y Hotspot).
+- Se impide iniciar la ronda con un solo jugador y se avisa cuando hay menos de 3.
+
 ## v1.0.0 — Primer release
 
 ### Añadido

@@ -94,6 +94,10 @@ object GameSession : TransportListener {
         val realWord = category.words.random()
         val endpoints = mutableListOf(HOST_ENDPOINT)
         endpoints.addAll(connectedClients)
+        if (endpoints.size < 2) {
+            statusLd.postValue("Necesitas al menos 1 jugador más para repartir roles (ideal 3+)")
+            return
+        }
         val impostorEndpoint = endpoints.random()
         val fakeWord = category.words.filter { it != realWord }.randomOrNull()
 

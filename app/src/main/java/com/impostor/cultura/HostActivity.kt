@@ -9,6 +9,7 @@ import android.widget.ListView
 import android.widget.RadioGroup
 import android.widget.Spinner
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.impostor.cultura.data.WordData
 import com.impostor.cultura.model.ImpostorMode
@@ -89,6 +90,10 @@ class HostActivity : AppCompatActivity() {
             val category = categorySpinner.selectedItem?.toString() ?: return@setOnClickListener
             val mode = if (modeGroup.checkedRadioButtonId == R.id.modeNone)
                 ImpostorMode.NO_WORD else ImpostorMode.FAKE_WORD
+            val total = GameSession.playersLd.value?.size ?: 0
+            if (total in 1..2) {
+                Toast.makeText(this, "Se recomiendan 3+ jugadores", Toast.LENGTH_SHORT).show()
+            }
             GameSession.startRound(category, mode)
         }
         revealButton.setOnClickListener { toggleWord() }

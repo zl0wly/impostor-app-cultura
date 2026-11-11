@@ -30,6 +30,7 @@ class NearbyTransport(context: Context) : Transport {
     private var listener: TransportListener? = null
     private var isHost = false
     private val pendingNicks = HashMap<String, String>()
+    private val hostEndpoints = HashSet<String>()
 
     override fun startHosting(localName: String, roomName: String, listener: TransportListener) {
         this.listener = listener
@@ -66,7 +67,15 @@ class NearbyTransport(context: Context) : Transport {
 
     private val lifecycle = object : ConnectionLifecycleCallback() {
         override fun onConnectionInitiated(endpointId: String, connectionInfo: ConnectionInfo) {
-            if (isHost) pendingNicks[endpointId] = connectionInfo.endpointName
+            if (isHost) {
+                if (hostEndpoints.size >= 7) {
+                    client.rejectConnection(endpointId)
+                    listener?.onError("Sala llena (máximo 8 jugadores)")
+                    return
+                }
+                hostEndpoints.add(endpointId)
+                pendingNicks[endpointId] = connectionInfo.endpointName
+            }
             client.acceptConnection(endpointId, payloads)
         }
 
@@ -75,12 +84,18 @@ class NearbyTransport(context: Context) : Transport {
                 if (isHost) listener?.onPlayerConnected(endpointId, pendingNicks[endpointId] ?: "Jugador")
                 else listener?.onConnectedToHost(endpointId)
             } else {
+                if (isHost) hostEndpoints.remove(endpointId)
                 listener?.onError("Conexión fallida: ${resolution.status.statusMessage}")
             }
         }
 
         override fun onDisconnected(endpointId: String) {
-            if (isHost) listener?.onPlayerDisconnected(endpointId) else listener?.onDisconnected()
+            if (isHost) {
+                hostEndpoints.remove(endpointId)
+                listener?.onPlayerDisconnected(endpointId)
+            } else {
+                listener?.onDisconnected()
+            }
         }
     }
 

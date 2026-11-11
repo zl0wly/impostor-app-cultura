@@ -117,6 +117,12 @@ class HotspotTransport : Transport {
             while (running) {
                 try {
                     val socket = serverSocket?.accept() ?: break
+                    val full = synchronized(lock) { clients.size >= 7 }
+                    if (full) {
+                        closeQuietly(socket)
+                        main.post { listener?.onError("Sala llena (máximo 8 jugadores)") }
+                        continue
+                    }
                     val id = synchronized(lock) { "C${counter++}" }
                     val writer = PrintWriter(
                         BufferedWriter(OutputStreamWriter(socket.getOutputStream(), Charsets.UTF_8)),

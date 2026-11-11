@@ -28,8 +28,8 @@ class MainActivity : AppCompatActivity() {
 
         findViewById<Button>(R.id.createRoomButton).setOnClickListener {
             val nick = readNickname() ?: return@setOnClickListener
-            if (!ensurePermissions()) return@setOnClickListener
             val mode = applyTransportMode()
+            if (mode == "nearby" && !ensurePermissions()) return@setOnClickListener
             startActivity(
                 Intent(this, HostActivity::class.java)
                     .putExtra("nick", nick)
@@ -38,8 +38,8 @@ class MainActivity : AppCompatActivity() {
         }
         findViewById<Button>(R.id.joinRoomButton).setOnClickListener {
             val nick = readNickname() ?: return@setOnClickListener
-            if (!ensurePermissions()) return@setOnClickListener
             val mode = applyTransportMode()
+            if (mode == "nearby" && !ensurePermissions()) return@setOnClickListener
             startActivity(
                 Intent(this, JoinActivity::class.java)
                     .putExtra("nick", nick)
@@ -47,16 +47,14 @@ class MainActivity : AppCompatActivity() {
             )
         }
 
-        if (PermissionHelper.missingPermissions(this).isNotEmpty()) {
-            ActivityCompat.requestPermissions(this, PermissionHelper.requiredPermissions(), REQ)
+        findViewById<RadioGroup>(R.id.transportGroup).setOnCheckedChangeListener { _, checkedId ->
+            if (checkedId == R.id.transportNearby) {
+                val missing = PermissionHelper.missingPermissions(this)
+                if (missing.isNotEmpty()) {
+                    ActivityCompat.requestPermissions(this, missing.toTypedArray(), REQ)
+                }
+            }
         }
-    }
-
-    override fun onResume() {
-        super.onResume()
-        val missing = PermissionHelper.missingPermissions(this)
-        statusText.text =
-            if (missing.isEmpty()) "" else "Faltan ${missing.size} permisos. Pulsa un botón para concederlos."
     }
 
     private fun readNickname(): String? {
